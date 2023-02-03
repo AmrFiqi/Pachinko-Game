@@ -9,7 +9,23 @@ import SpriteKit
 
 
 class GameScene: SKScene, SKPhysicsContactDelegate {
-  
+    var scoreLabel:SKLabelNode!
+    var score = 0 {
+        didSet{
+            scoreLabel.text = "Score: \(score)"
+        }
+    }
+    var editLabel: SKLabelNode!
+    var editingMode: Bool = false {
+        didSet{
+            if editingMode{
+                editLabel.text = "Done"
+            }
+            else{
+                editLabel.text = "Edit"
+            }
+        }
+    }
     
     override func didMove(to view: SKView) {
         // Assign the scene to be physics world contact delegate
@@ -22,8 +38,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         background.zPosition = -1
         addChild(background)
         
+        // Set score label
+        scoreLabel = SKLabelNode(fontNamed: "Chalkduster")
+        scoreLabel.text = "Score: 0"
+        scoreLabel.horizontalAlignmentMode = .right
+        scoreLabel.position = CGPoint(x: 980, y: 650)
+        addChild(scoreLabel)
+        
         physicsBody = SKPhysicsBody(edgeLoopFrom: frame)
         
+        editLabel = SKLabelNode(fontNamed: "Chalkduster")
+        editLabel.text = "Edit"
+        editLabel.position = CGPoint(x: 80, y: 650)
+        addChild(editLabel)
         
         //Add bouncers
         makeBouncer(at: CGPoint(x: 0, y: 50))
@@ -32,7 +59,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         makeBouncer(at: CGPoint(x: 768, y: 50))
         makeBouncer(at: CGPoint(x: 1024, y: 50))
        
-        
+        // Add Slots for points
         makeSlot(at: CGPoint(x: 128, y: 50), isGood: true)
         makeSlot(at: CGPoint(x: 384, y: 50), isGood: false)
         makeSlot(at: CGPoint(x: 640, y: 50), isGood: true)
@@ -44,13 +71,33 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         guard let touch = touches.first else{return}
         let location = touch.location(in: self)
         
-        let ball = SKSpriteNode(imageNamed: "ballRed")
-        ball.physicsBody = SKPhysicsBody(circleOfRadius: ball.size.width/2)
-        ball.physicsBody?.restitution = 0.5
-        ball.physicsBody?.contactTestBitMask = ball.physicsBody?.collisionBitMask ?? 0
-        ball.position = location
-        ball.name = "ball"
-        addChild(ball)
+        // Get all the nodes on the screen
+        let objects = nodes(at: location)
+        
+        // Toggle between edit mode and play mode
+        if objects.contains(editLabel){
+            editingMode.toggle()
+        }
+        else{
+            if editingMode{
+                let size = CGSize(width: Int.random(in: 16...128), height: 16)
+                let box = SKSpriteNode(color: UIColor(red: CGFloat.random(in: 0...1), green: CGFloat.random(in: 0...1), blue: CGFloat.random(in: 0...1), alpha: 1), size: size)
+                box.zRotation = CGFloat.random(in: 0...3)
+                box.position = location
+                box.physicsBody = SKPhysicsBody(rectangleOf: box.size)
+                box.physicsBody?.isDynamic = false
+                addChild(box)
+            }
+            else{
+                let ball = SKSpriteNode(imageNamed: "ballRed")
+                ball.physicsBody = SKPhysicsBody(circleOfRadius: ball.size.width/2)
+                ball.physicsBody?.restitution = 0.5
+                ball.physicsBody?.contactTestBitMask = ball.physicsBody?.collisionBitMask ?? 0
+                ball.position = location
+                ball.name = "ball"
+                addChild(ball)
+            }
+        }
     }
     
     // Create a bouncer
@@ -94,9 +141,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
        
         if object.name == "good" {
             destroy(ball: ball)
+            score += 1
         }
         else if object.name == "bad" {
             destroy(ball: ball)
+            if score <= 0 {
+                score = 0
+            }
+            else{
+                score -= 1
+            }
+            
         }
     }
     // Make the ball disappear
@@ -106,11 +161,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     // Check when contact happen
     func didBegin(_ contact: SKPhysicsContact) {
-        if contact.bodyA.node?.name == "ball" {
-            collision(between: contact.bodyA.node!, object: contact.bodyB.node!)
+        // To make sure if a collision happens twice and ball is destroy the app doesn't crash with force unwrap
+        guard let nodeA = contact.bodyA.node else {return}
+        guard let nodeB = contact.bodyB.node else {return}
+
+        
+        if nodeA.name == "ball" {
+            collision(between: nodeA, object: nodeB)
+            
         }
-        else if contact.bodyB.node?.name == "ball" {
-            collision(between: contact.bodyB.node!, object: contact.bodyA.node!)
+        else if nodeB.name == "ball" {
+            collision(between: nodeB, object: nodeA)
         }
     }
 }
