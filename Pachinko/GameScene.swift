@@ -91,7 +91,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 addChild(box)
             }
             else{
-                var ballColor = ["Red", "Green", "Cyan", "Blue", "Grey", "Yellow"]
+                let ballColor = ["Red", "Green", "Cyan", "Blue", "Grey", "Yellow"]
                 let ball = SKSpriteNode(imageNamed: "ball\(ballColor.randomElement() ?? "Red")")
                 ball.physicsBody = SKPhysicsBody(circleOfRadius: ball.size.width/2)
                 ball.physicsBody?.restitution = 0.5
