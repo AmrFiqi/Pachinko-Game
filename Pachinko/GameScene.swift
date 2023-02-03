@@ -52,6 +52,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         editLabel.position = CGPoint(x: 80, y: 650)
         addChild(editLabel)
         
+        // Add Slots for points
+        makeSlot(at: CGPoint(x: 128, y: 50), isGood: true)
+        makeSlot(at: CGPoint(x: 384, y: 50), isGood: false)
+        makeSlot(at: CGPoint(x: 640, y: 50), isGood: true)
+        makeSlot(at: CGPoint(x: 896, y: 50), isGood: false)
+        
         //Add bouncers
         makeBouncer(at: CGPoint(x: 0, y: 50))
         makeBouncer(at: CGPoint(x: 256, y: 50))
@@ -59,11 +65,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         makeBouncer(at: CGPoint(x: 768, y: 50))
         makeBouncer(at: CGPoint(x: 1024, y: 50))
        
-        // Add Slots for points
-        makeSlot(at: CGPoint(x: 128, y: 50), isGood: true)
-        makeSlot(at: CGPoint(x: 384, y: 50), isGood: false)
-        makeSlot(at: CGPoint(x: 640, y: 50), isGood: true)
-        makeSlot(at: CGPoint(x: 896, y: 50), isGood: false)
+        
     }
     
     // Show touch location at the screen
